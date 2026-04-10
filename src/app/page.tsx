@@ -6,10 +6,11 @@ import { useWatchlist } from "@/hooks/useWatchlist";
 import Header from "@/components/Header";
 import StockList from "@/components/StockList";
 import StockCard from "@/components/StockCard";
-import VolumeLeader from "@/components/VolumeLeader";
+import VolumeTable from "@/components/VolumeTable";
 import MarketTable from "@/components/MarketTable";
+import CrobexChart from "@/components/CrobexChart";
 import { motion, AnimatePresence } from "framer-motion";
-import { PanelRightClose, PanelRightOpen, TrendingUp, AlertTriangle } from "lucide-react";
+import { PanelRightClose, PanelRightOpen, BarChart2, TrendingUp, AlertTriangle } from "lucide-react";
 
 function SkeletonCard() {
   return (
@@ -39,7 +40,6 @@ export default function Dashboard() {
 
   const pinnedStocks =
     data?.stocks.filter((s) => watchlist.includes(s.ticker)) ?? [];
-  const maxTurnover = data?.topTurnover[0]?.turnover ?? 1;
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -83,45 +83,49 @@ export default function Dashboard() {
             </div>
           )}
 
-          {/* Top Volume Section */}
-          <section>
-            <div className="flex items-center gap-2 mb-4">
-              <TrendingUp size={16} className="text-[#6b5ce7]" />
-              <h2
-                className="text-sm uppercase tracking-widest text-[#8b8fa3] font-bold"
-                style={{ fontFamily: "var(--font-heading)" }}
-              >
-                Najveći promet danas
-              </h2>
+          {/* CBX Index + Top Volume — side by side on wider screens */}
+          <div className="grid grid-cols-1 lg:grid-cols-5 gap-5">
+            {/* CBX Chart */}
+            <div className="lg:col-span-3">
+              <div className="flex items-center gap-2 mb-3">
+                <BarChart2 size={15} className="text-[#6b5ce7]" />
+                <h2
+                  className="text-xs uppercase tracking-widest text-[#8b8fa3] font-bold"
+                  style={{ fontFamily: "var(--font-heading)" }}
+                >
+                  CBX Indeks
+                </h2>
+              </div>
+              <CrobexChart />
             </div>
-            <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-thin">
-              {loading
-                ? Array.from({ length: 5 }).map((_, i) => (
-                    <div
-                      key={i}
-                      className="min-w-[220px] border border-[#e8e5f2] bg-white rounded-xl p-4"
-                    >
-                      <div className="skeleton h-4 w-20 mb-2" />
-                      <div className="skeleton h-3 w-28 mb-3" />
-                      <div className="skeleton h-2 w-full mb-3" />
-                      <div className="skeleton h-6 w-24" />
-                    </div>
-                  ))
-                : data?.topTurnover.map((stock, i) => (
-                    <VolumeLeader
-                      key={stock.ticker}
-                      stock={stock}
-                      maxTurnover={maxTurnover}
-                      index={i}
-                    />
+
+            {/* Top Volume Table */}
+            <div className="lg:col-span-2">
+              <div className="flex items-center gap-2 mb-3">
+                <TrendingUp size={15} className="text-[#6b5ce7]" />
+                <h2
+                  className="text-xs uppercase tracking-widest text-[#8b8fa3] font-bold"
+                  style={{ fontFamily: "var(--font-heading)" }}
+                >
+                  Najveći promet danas
+                </h2>
+              </div>
+              {loading ? (
+                <div className="rounded-xl border border-[#e8e5f2] bg-white p-4 space-y-2">
+                  {Array.from({ length: 5 }).map((_, i) => (
+                    <div key={i} className="skeleton h-10 w-full" />
                   ))}
+                </div>
+              ) : data ? (
+                <VolumeTable stocks={data.topTurnover} />
+              ) : null}
             </div>
-          </section>
+          </div>
 
           {/* Pinned / Watchlist Cards */}
           <section>
             <h2
-              className="text-sm uppercase tracking-widest text-[#8b8fa3] font-bold mb-4"
+              className="text-xs uppercase tracking-widest text-[#8b8fa3] font-bold mb-4"
               style={{ fontFamily: "var(--font-heading)" }}
             >
               {pinnedStocks.length > 0 ? "Watchlista" : "Odaberite dionice iz lijeve liste"}
@@ -162,7 +166,7 @@ export default function Dashboard() {
           <section className="hidden md:block">
             <div className="flex items-center justify-between mb-4">
               <h2
-                className="text-sm uppercase tracking-widest text-[#8b8fa3] font-bold"
+                className="text-xs uppercase tracking-widest text-[#8b8fa3] font-bold"
                 style={{ fontFamily: "var(--font-heading)" }}
               >
                 Tržišna tablica
